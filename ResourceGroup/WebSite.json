@@ -71,8 +71,8 @@
   },
   "variables": {
     "webSiteName": "[concat(parameters('prefix'),'-webapp-',parameters('environment'))]",
-    "sqlserverName": "[concat(parameters('prefix'),'-sqlserver-', uniqueString(resourceGroup().name))]",
-    "databaseName": "[parameters('sqldatabasename')]"
+    "sqlserverName": "[concat(parameters('prefix'),'-sqlserver')]",
+    "databaseName": "[concat(parameters('sqldatabasename'),'-',parameters('environment'))]"
   },
   "resources": [
     {
