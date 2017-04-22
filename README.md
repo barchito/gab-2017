@@ -5,14 +5,23 @@ En el siguiente lab vamos realizar el build de una web api y deployearlo en azur
 
 Se utiliza azure como ejemplo pero el deployment se puede realizar en cualquier plataforma. Aws, Google, Onpremises, ios y Android.
 
+## Requisitos
+Una cuenta de [link vsts]. El servicio es gratuito para 5 developers e ilimitados Stakeholders.
+Una cuenta de Azure para deploy de Azure Web App
 
 ## Paso 1
 Clonar el repositorio
+1. Ingrear la url de Github https://github.com/barchito/gab-2017
+2. Aceptar los cambios.
+3. Esperar mientras hace el clone
+
+## Paso 2
+Revisar que
+
 ![Paso 1](docs/1-create-build.png)
 
 
 
-## Paso 2
 
 ## Paso 3
 
@@ -25,3 +34,5 @@ Build solution
 Copy Tools
 $(build.sourcesDirectory)\ResourceGroup\
 *.json
+
+[link vsts](https://www.visualstudio.com/es/team-services/)
