@@ -1,9 +1,18 @@
-# Global Azure Bootcamp 2017.
+# Global Azure Bootcamp 2017
 ## Build and Release the Azure way
 
 En el siguiente lab vamos realizar el build de una web api y deployearlo en azure en los entornos de Dev, QA y Prod.
 
 Se utiliza azure como ejemplo pero el deployment se puede realizar en cualquier plataforma. Aws, Google, Onpremises, ios y Android.
+
+
+## Paso 1
+Clonar el repositorio
+
+
+## Paso 2
+
+## Paso 3
 
 # Configuraciones especiales de las tareas
 
