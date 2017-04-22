@@ -39,15 +39,89 @@
       "type": "string",
       "defaultValue": "dev",
       "metadata": {
-        "description": "Name of the enviorment. This is used as prefix for each environment service"
+        "description": "Se utliza como sufijo para los recursos creados. Ej: Dev, Qa, Prod, UAT"
+      }
+    },
+    "prefix": {
+      "type": "string",
+      "defaultValue": "build-gab-2017",
+      "metadata": {
+        "description": "Se utiliza como prefijo para los recursos creados. Es importante un nombre unico ya que los nombres de los recursos son compartidos a lo largo de Azure. Ej.build-gab-2017"
+      }
+    },
+    "sqlAdministratorLogin": {
+      "type": "string",
+      "metadata": {
+        "description": "Usuario del servidor de base de datos"
+      }
+    },
+    "sqlAdministratorLoginPassword": {
+      "type": "securestring",
+      "metadata": {
+        "description": "Password del servidor de base de datos"
+      }
+    },
+    "sqldatabasename": {
+      "type": "string",
+      "metadata": {
+        "description": "Nombre de la base de datos"
       }
     }
 
   },
   "variables": {
-    "webSiteName": "[concat('gab-webapp-gab2017-',parameters('environment'))]"
+    "webSiteName": "[concat(parameters('prefix'),'-webapp-',parameters('environment'))]",
+    "sqlserverName": "[concat(parameters('prefix'),'-sqlserver-', uniqueString(resourceGroup().name))]",
+    "databaseName": "[parameters('sqldatabasename')]"
   },
   "resources": [
+    {
+      "apiVersion": "2014-04-01",
+      "location": "[resourceGroup().location]",
+      "name": "[variables('sqlserverName')]",
+      "properties": {
+        "administratorLogin": "[parameters('sqlAdministratorLogin')]",
+        "administratorLoginPassword": "[parameters('sqlAdministratorLoginPassword')]",
+        "version": "12.0"
+      },
+      "resources": [
+        {
+          "name": "[variables('databaseName')]",
+          "type": "databases",
+          "location": "[resourceGroup().location]",
+          "tags": {
+            "displayName": "Database"
+          },
+          "apiVersion": "2015-01-01",
+          "dependsOn": [
+            "[variables('sqlserverName')]"
+          ],
+          "properties": {
+            "edition": "Basic",
+            "collation": "SQL_Latin1_General_CP1_CI_AS",
+            "maxSizeBytes": "1073741824",
+            "requestedServiceObjectiveName": "Basic"
+          }
+        },
+        {
+          "type": "firewallrules",
+          "apiVersion": "2014-04-01",
+          "dependsOn": [
+            "[variables('sqlserverName')]"
+          ],
+          "location": "[resourceGroup().location]",
+          "name": "AllowAllWindowsAzureIps",
+          "properties": {
+            "endIpAddress": "0.0.0.0",
+            "startIpAddress": "0.0.0.0"
+          }
+        }
+      ],
+      "tags": {
+        "displayName": "SqlServer"
+      },
+      "type": "Microsoft.Sql/servers"
+    },
     {
       "apiVersion": "2015-08-01",
       "name": "[parameters('hostingPlanName')]",
@@ -79,7 +153,23 @@
       "properties": {
         "name": "[variables('webSiteName')]",
         "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('hostingPlanName'))]"
-      }
+      },
+      "resources": [
+        {
+          "apiVersion": "2016-03-01",
+          "type": "config",
+          "name": "connectionstrings",
+          "dependsOn": [
+            "[variables('webSiteName')]"
+          ],
+          "properties": {
+            "DefaultConnection": {
+              "value": "[concat('Data Source=tcp:', reference(concat('Microsoft.Sql/servers/', variables('sqlserverName'))).fullyQualifiedDomainName, ',1433;Initial Catalog=', variables('databaseName'), ';User Id=', parameters('sqlAdministratorLogin'), '@', reference(concat('Microsoft.Sql/servers/', variables('sqlserverName'))).fullyQualifiedDomainName, ';Password=', parameters('sqlAdministratorLoginPassword'), ';')]",
+              "type": "SQLAzure"
+            }
+          }
+        }
+      ]
     },
     {
       "apiVersion": "2014-04-01",
@@ -301,9 +391,21 @@
     }
   ],
   "outputs": {
-    "AppServiceName": {
+    "o-AppServiceName": {
       "value": "[variables('webSiteName')]",
       "type": "string"
+    },
+    "o-WebUrl": {
+      "type": "string",
+      "value": "[reference(concat('Microsoft.Web/sites/', variables('webSiteName'))).hostnames[0]]"
+    },
+    "o-SqlServerName": {
+      "type": "string",
+      "value": "[reference(concat('Microsoft.Sql/servers/', variables('sqlserverName'))).fullyQualifiedDomainName]"
+    },
+    "o-SqlServerConnectionstring": {
+      "type": "string",
+      "value": "[concat('Data Source=tcp:', reference(concat('Microsoft.Sql/servers/', variables('sqlserverName'))).fullyQualifiedDomainName, ',1433;Initial Catalog=', variables('databaseName'), ';User Id=', parameters('sqlAdministratorLogin'), '@', reference(concat('Microsoft.Sql/servers/', variables('sqlserverName'))).fullyQualifiedDomainName, ';Password=', parameters('sqlAdministratorLoginPassword'), ';')]"
     }
   }
 }
