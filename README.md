@@ -8,6 +8,8 @@ Se utiliza azure como ejemplo pero el deployment se puede realizar en cualquier 
 
 ## Paso 1
 Clonar el repositorio
+![Paso 1](docs/1-create-build.png)
+
 
 
 ## Paso 2
